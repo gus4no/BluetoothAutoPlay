@@ -11,6 +11,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 import com.gus4no.bluetoothautoplay.R;
 import com.gus4no.listeners.ServiceSwitchListener;
+import com.gus4no.services.HeadSetChecker;
 
 public class MainActivity extends Activity{
 
@@ -23,6 +24,7 @@ public class MainActivity extends Activity{
     setContentView(R.layout.activity_main);
     Switch serviceToggle = (Switch) findViewById(R.id.serviceSwitch);
     serviceToggle.setOnCheckedChangeListener(new ServiceSwitchListener());
+    checkBlueTooth();
   }
 
   @Override
@@ -35,11 +37,19 @@ public class MainActivity extends Activity{
   public void checkBlueTooth() {
     adapter = BluetoothAdapter.getDefaultAdapter();
 
-    if (!adapter.isEnabled()) {
+    if (adapter.isEnabled()){
+      Switch serviceToggle = (Switch) findViewById(R.id.serviceSwitch);
+      if(serviceToggle.isChecked()){ startHeadSetService(); }
+    }else{
       Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
       startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
     }
-  }    
+  }
+  
+  public void startHeadSetService(){
+    Intent i= new Intent(this, HeadSetChecker.class);
+    this.startService(i); 
+  }
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -48,6 +58,8 @@ public class MainActivity extends Activity{
         if (resultCode == Activity.RESULT_CANCELED) {
           Switch serviceToggle = (Switch) findViewById(R.id.serviceSwitch);
           serviceToggle.toggle();
+        }else{
+         startHeadSetService();
         }
         break;
   
